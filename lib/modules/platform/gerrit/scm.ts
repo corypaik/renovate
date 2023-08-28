@@ -7,6 +7,11 @@ import { DefaultGitScm } from '../default-scm';
 import { client } from './client';
 import type { GerritFindPRConfig } from './types';
 
+// TODO(corypaik): How to get gitIgonredAuthors from config??
+const gitIgonredAuthors = [
+  'bazel-worker@corypaik.com',
+];
+
 let repository: string;
 let username: string;
 export function configureScm(repo: string, login: string): void {
@@ -84,11 +89,29 @@ export class GerritScm extends DefaultGitScm {
     const change = await client
       .findChanges(repository, searchConfig, true)
       .then((res) => res.pop());
-    if (change) {
-      const currentGerritPatchset = change.revisions![change.current_revision!];
-      return currentGerritPatchset.uploader.username !== username;
+    if (!change) {
+      return false;
     }
-    return false;
+
+    const currentGerritPatchset = change.revisions![change.current_revision!];
+
+    const lastAuthor = currentGerritPatchset.commit.committer.email;
+
+    // From //lib/util/git/index.ts:isBranchModified
+    if (
+      currentGerritPatchset.uploader.username === username ||
+      // lastAuthor === gitAuthorEmail ||
+      gitIgonredAuthors.some((ignoredAuthor) => lastAuthor === ignoredAuthor)
+    ) {
+      // author matches - branch has not been modified
+      logger.debug('branch.isModified() = false');
+      return false;
+    }
+    logger.debug(
+      { branchName, lastAuthor, username },
+      'branch.isModified() = true'
+    );
+    return true;
   }
 
   override async commitAndPush(

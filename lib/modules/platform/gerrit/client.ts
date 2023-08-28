@@ -21,6 +21,7 @@ class GerritClient {
     'LABELS',
     'CURRENT_ACTIONS', //to check if current_revision can be "rebase"
     'CURRENT_REVISION', //get RevisionInfo::ref to fetch
+    'CURRENT_COMMIT',  // to check gitIgnoredAuthors
   ] as const;
 
   private gerritHttp = new GerritHttp();

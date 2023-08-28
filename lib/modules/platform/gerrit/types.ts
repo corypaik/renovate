@@ -59,6 +59,17 @@ export interface GerritRevisionInfo {
    */
   ref: string;
   actions?: Record<string, GerritActionInfo>;
+  commit: GerritCommitInfo;
+}
+
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#commit-info
+export interface GerritCommitInfo {
+  committer: GerritGitPersonInfo;
+}
+
+// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#git-person-info
+export interface GerritGitPersonInfo {
+  email: string;
 }
 
 export interface GerritChangeMessageInfo {
